@@ -15,4 +15,4 @@ export const playlist: Track[] = [
 { title: 'pixel heart', artist: 'candyfloss', duration: '2:22' }];
 
 
-export const BIRTHDAY_GIRL = 'sofia';
+export const BIRTHDAY_GIRL = 'Trisha';
