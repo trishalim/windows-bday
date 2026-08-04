@@ -1,0 +1,107 @@
+/* @import url() FONT IMPORTS MUST ALWAYS BE AT THE VERY TOP OF THIS FILE, ABOVE THE TAILWIND IMPORTS — DO NOT DELETE THIS COMMENT */
+@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=VT323&family=Sniglet:wght@400;800&display=swap');
+
+/* CRITICAL: THE FOLLOWING TAILWIND IMPORTS MUST NEVER BE DELETED OR REORDERED — DO NOT DELETE THIS COMMENT */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* END TAILWIND IMPORTS — ALL OTHER CSS MUST GO BELOW THIS LINE */
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+}
+body {
+  font-family: Tahoma, Verdana, Geneva, sans-serif;
+  -webkit-font-smoothing: none;
+}
+/* ---- Windows 9x chrome ---- */
+.bevel-out {
+  border-width: 2px;
+  border-style: solid;
+  border-top-color: #ffffff;
+  border-left-color: #ffffff;
+  border-right-color: #8a6b7c;
+  border-bottom-color: #8a6b7c;
+  box-shadow: 1px 1px 0 0 #4b2f3d;
+}
+.bevel-in {
+  border-width: 2px;
+  border-style: solid;
+  border-top-color: #8a6b7c;
+  border-left-color: #8a6b7c;
+  border-right-color: #ffffff;
+  border-bottom-color: #ffffff;
+}
+.bevel-btn {
+  border-width: 2px;
+  border-style: solid;
+  border-top-color: #ffffff;
+  border-left-color: #ffffff;
+  border-right-color: #8a6b7c;
+  border-bottom-color: #8a6b7c;
+  background-color: #f4dced;
+}
+.bevel-btn:active,
+.bevel-btn[data-pressed='true'] {
+  border-top-color: #8a6b7c;
+  border-left-color: #8a6b7c;
+  border-right-color: #ffffff;
+  border-bottom-color: #ffffff;
+}
+.titlebar-pink {
+  background-image: linear-gradient(90deg, #d61f8f 0%, #ff7ec9 60%, #ffc2e7 100%);
+}
+.titlebar-purple {
+  background-image: linear-gradient(90deg, #6b2fb5 0%, #a86bff 60%, #d9c2ff 100%);
+}
+.titlebar-blue {
+  background-image: linear-gradient(90deg, #1f5fd6 0%, #6fa8ff 60%, #c2e0ff 100%);
+}
+.titlebar-idle {
+  background-image: linear-gradient(90deg, #9c8a95 0%, #c7b7c2 100%);
+}
+.pixel-text {
+  font-family: 'Pixelify Sans', 'Courier New', monospace;
+}
+.crt-text {
+  font-family: 'VT323', 'Courier New', monospace;
+}
+.bubble-text {
+  font-family: 'Sniglet', 'Comic Sans MS', cursive;
+}
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.07) 0px,
+    rgba(255, 255, 255, 0.07) 1px,
+    rgba(0, 0, 0, 0.06) 2px,
+    rgba(0, 0, 0, 0.06) 3px
+  );
+}
+.retro-scroll::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+.retro-scroll::-webkit-scrollbar-track {
+  background: repeating-conic-gradient(#ffd9f0 0% 25%, #ffffff 0% 50%) 50% / 2px 2px;
+}
+.retro-scroll::-webkit-scrollbar-thumb {
+  background: #f4dced;
+  border: 2px solid;
+  border-top-color: #ffffff;
+  border-left-color: #ffffff;
+  border-right-color: #8a6b7c;
+  border-bottom-color: #8a6b7c;
+}
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
