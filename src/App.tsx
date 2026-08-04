@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { Win95Window } from './components/Win95Window';
+import { ConfirmDialog } from './components/ConfirmDialog';
 import { WinampPlayer } from './components/apps/WinampPlayer';
 import { PaintApp } from './components/apps/PaintApp';
 import { NotepadApp } from './components/apps/NotepadApp';
@@ -83,7 +84,19 @@ export function App() {
     uploadImage
   } = useWindowManager();
 
+  const [confirmCloseId, setConfirmCloseId] = useState<string | null>(null);
+
   const empty = windows.length === 0;
+
+  // Content windows warn before deleting; app windows (winamp/about) just close.
+  const requestClose = (win: WindowInstance) => {
+    if (appRegistry[win.kind].creatable) setConfirmCloseId(win.id);
+    else close(win.id);
+  };
+
+  const confirmTarget = confirmCloseId ?
+  windows.find((w) => w.id === confirmCloseId) ?? null :
+  null;
 
   return (
     <main className="flex h-full w-full flex-col overflow-hidden bg-[#7dbb5a]">
@@ -152,7 +165,7 @@ export function App() {
                 content={win.content as unknown as StickyContent}
                 onChange={(patch) => patchContent(win.id, patch)}
                 onFocus={() => focus(win.id)}
-                onClose={() => close(win.id)}
+                onClose={() => requestClose(win)}
                 onMoved={(x, y) => move(win.id, x, y)} /> :
 
 
@@ -169,7 +182,7 @@ export function App() {
                 minimized={win.minimized}
                 readOnly={!owned}
                 onFocus={() => focus(win.id)}
-                onClose={() => close(win.id)}
+                onClose={() => requestClose(win)}
                 onMinimize={() => minimize(win.id)}
                 onMoved={(x, y) => move(win.id, x, y)}>
 
@@ -193,6 +206,19 @@ export function App() {
         onToggle={toggle}
         onOpen={open}
         onCloseAll={closeAll} />
+
+      {confirmTarget &&
+      <ConfirmDialog
+        title="Delete message?"
+        message={`This will permanently delete "${confirmTarget.title.split(' — ')[0]}" from ${BIRTHDAY_GIRL}'s board for everyone. This can't be undone.`}
+        confirmLabel="Delete it"
+        cancelLabel="Keep it"
+        onConfirm={() => {
+          close(confirmTarget.id);
+          setConfirmCloseId(null);
+        }}
+        onCancel={() => setConfirmCloseId(null)} />
+      }
 
     </main>);
 
