@@ -31,10 +31,9 @@ export function DesktopIcons({ onOpen }: DesktopIconsProps) {
             <button
               type="button"
               onClick={() => {
-                if (isSelected && item.kind) onOpen(item.kind);else
                 setSelected(item.id);
+                if (item.kind) onOpen(item.kind);
               }}
-              onDoubleClick={() => item.kind && onOpen(item.kind)}
               className="no-select flex w-full flex-col items-center gap-[3px] px-1 py-1 text-center">
               
               <span

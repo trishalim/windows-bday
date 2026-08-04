@@ -117,7 +117,7 @@ export function App() {
                 anywhere on the desktop.
               </p>
               <p className="pixel-text mt-3 text-[11px] text-ink/60">
-                tip: click an icon twice to open it
+                tip: click an icon to open it
               </p>
             </div>
           }
