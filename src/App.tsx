@@ -13,18 +13,51 @@ import { Taskbar } from './components/Taskbar';
 import { AppIcon, appRegistry } from './components/appRegistry';
 import { useWindowManager } from './hooks/useWindowManager';
 import { BIRTHDAY_GIRL, WALLPAPER } from './data/desktop';
-import { WindowInstance } from './types/desktop';
+import { isConfigured } from './lib/supabase';
+import {
+  PaintContent,
+  PhotoContent,
+  StickyContent,
+  TxtContent,
+  WindowContent,
+  WindowInstance,
+  WordContent } from
+'./types/desktop';
 
-function AppBody({ win, onClose }: {win: WindowInstance;onClose: () => void;}) {
+interface AppBodyProps {
+  win: WindowInstance;
+  readOnly: boolean;
+  onClose: () => void;
+  onChange: (patch: WindowContent) => void;
+  onUploadImage: (blob: Blob, ext: string) => Promise<string | null>;
+}
+
+function AppBody({ win, readOnly, onClose, onChange, onUploadImage }: AppBodyProps) {
   switch (win.kind) {
     case 'paint':
-      return <PaintApp />;
+      return (
+        <PaintApp
+          content={win.content as unknown as PaintContent}
+          readOnly={readOnly}
+          onChange={onChange}
+          onUploadImage={onUploadImage} />);
+
     case 'txt':
-      return <NotepadApp />;
+      return (
+        <NotepadApp content={win.content as unknown as TxtContent} readOnly={readOnly} onChange={onChange} />);
+
     case 'word':
-      return <WordDoc />;
+      return (
+        <WordDoc content={win.content as unknown as WordContent} readOnly={readOnly} onChange={onChange} />);
+
     case 'photo':
-      return <PhotoApp />;
+      return (
+        <PhotoApp
+          content={win.content as unknown as PhotoContent}
+          readOnly={readOnly}
+          onChange={onChange}
+          onUploadImage={onUploadImage} />);
+
     case 'winamp':
       return <WinampPlayer />;
     case 'about':
@@ -35,8 +68,20 @@ function AppBody({ win, onClose }: {win: WindowInstance;onClose: () => void;}) {
 }
 
 export function App() {
-  const { windows, activeId, open, close, minimize, focus, toggle, closeAll } =
-  useWindowManager();
+  const {
+    windows,
+    activeId,
+    ownerId,
+    open,
+    close,
+    minimize,
+    focus,
+    move,
+    toggle,
+    closeAll,
+    patchContent,
+    uploadImage
+  } = useWindowManager();
 
   const empty = windows.length === 0;
 
@@ -45,12 +90,18 @@ export function App() {
       <div
         className="retro-scroll relative flex-1 overflow-auto bg-cover bg-center"
         style={{ backgroundImage: `url(${WALLPAPER})` }}>
-        
+
         <div className="relative min-h-full">
           <p className="pixel-text absolute right-3 top-2 z-[2] text-right text-[12px] leading-tight text-white drop-shadow-[1px_1px_0_rgba(58,28,44,0.9)]">
             happy birthday {BIRTHDAY_GIRL}
             <br />
             <span className="text-cotton">♡ girlypop 98 ♡</span>
+            {!isConfigured &&
+            <>
+              <br />
+              <span className="text-lemon">offline — not saving</span>
+            </>
+            }
           </p>
 
           <DesktopIcons onOpen={open} />
@@ -72,37 +123,50 @@ export function App() {
           }
 
           <AnimatePresence>
-            {windows.map((win) =>
-            win.kind === 'sticky' ?
-            <StickyNote
-              key={win.id}
-              x={win.x}
-              y={win.y}
-              z={win.z}
-              minimized={win.minimized}
-              onFocus={() => focus(win.id)}
-              onClose={() => close(win.id)} /> :
+            {windows.map((win) => {
+              const owned = win.ownerId === ownerId;
+              return win.kind === 'sticky' ?
+              <StickyNote
+                key={win.id}
+                x={win.x}
+                y={win.y}
+                z={win.z}
+                minimized={win.minimized}
+                readOnly={!owned}
+                content={win.content as unknown as StickyContent}
+                onChange={(patch) => patchContent(win.id, patch)}
+                onFocus={() => focus(win.id)}
+                onClose={() => close(win.id)}
+                onMoved={(x, y) => move(win.id, x, y)} /> :
 
 
-            <Win95Window
-              key={win.id}
-              title={win.title}
-              accent={appRegistry[win.kind].accent}
-              icon={<AppIcon kind={win.kind} className="h-3.5 w-3.5 text-white" />}
-              x={win.x}
-              y={win.y}
-              width={win.w}
-              z={win.z}
-              active={activeId === win.id}
-              minimized={win.minimized}
-              onFocus={() => focus(win.id)}
-              onClose={() => close(win.id)}
-              onMinimize={() => minimize(win.id)}>
-              
-                  <AppBody win={win} onClose={() => close(win.id)} />
-                </Win95Window>
+              <Win95Window
+                key={win.id}
+                title={win.title}
+                accent={appRegistry[win.kind].accent}
+                icon={<AppIcon kind={win.kind} className="h-3.5 w-3.5 text-white" />}
+                x={win.x}
+                y={win.y}
+                width={win.w}
+                z={win.z}
+                active={activeId === win.id}
+                minimized={win.minimized}
+                readOnly={!owned}
+                onFocus={() => focus(win.id)}
+                onClose={() => close(win.id)}
+                onMinimize={() => minimize(win.id)}
+                onMoved={(x, y) => move(win.id, x, y)}>
 
-            )}
+                  <AppBody
+                    win={win}
+                    readOnly={!owned}
+                    onClose={() => close(win.id)}
+                    onChange={(patch) => patchContent(win.id, patch)}
+                    onUploadImage={(blob, ext) => uploadImage(win.id, blob, ext)} />
+
+                </Win95Window>;
+
+            })}
           </AnimatePresence>
         </div>
       </div>
@@ -113,7 +177,7 @@ export function App() {
         onToggle={toggle}
         onOpen={open}
         onCloseAll={closeAll} />
-      
+
     </main>);
 
 }

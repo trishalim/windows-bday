@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   AlignCenterIcon,
   AlignLeftIcon,
@@ -10,20 +10,29 @@ import {
 'lucide-react';
 import { MenuBar } from '../Win95Window';
 import { BIRTHDAY_GIRL } from '../../data/desktop';
+import { WordContent } from '../../types/desktop';
 
 const fonts = ['Comic Sans MS', 'Times New Roman', 'Courier New', 'Tahoma'];
 const sizes = [12, 14, 18, 24];
 
-export function WordDoc() {
-  const [heading, setHeading] = useState('');
-  const [body, setBody] = useState('');
-  const [signature, setSignature] = useState('');
-  const [bold, setBold] = useState(false);
-  const [italic, setItalic] = useState(false);
-  const [underline, setUnderline] = useState(false);
-  const [center, setCenter] = useState(false);
-  const [font, setFont] = useState(fonts[0]);
-  const [size, setSize] = useState(14);
+interface WordDocProps {
+  content: WordContent;
+  readOnly?: boolean;
+  onChange: (patch: Partial<WordContent>) => void;
+}
+
+export function WordDoc({ content, readOnly = false, onChange }: WordDocProps) {
+  const {
+    heading = '',
+    body = '',
+    signature = '',
+    font = fonts[0],
+    size = 14,
+    bold = false,
+    italic = false,
+    underline = false,
+    center = false
+  } = content;
 
   const bodyStyle: React.CSSProperties = {
     fontFamily: `"${font}", cursive`,
@@ -35,14 +44,14 @@ export function WordDoc() {
   };
 
   const toggles = [
-  { label: 'Bold', icon: BoldIcon, on: bold, set: () => setBold((v) => !v) },
-  { label: 'Italic', icon: ItalicIcon, on: italic, set: () => setItalic((v) => !v) },
-  { label: 'Underline', icon: UnderlineIcon, on: underline, set: () => setUnderline((v) => !v) },
+  { label: 'Bold', icon: BoldIcon, on: bold, set: () => onChange({ bold: !bold }) },
+  { label: 'Italic', icon: ItalicIcon, on: italic, set: () => onChange({ italic: !italic }) },
+  { label: 'Underline', icon: UnderlineIcon, on: underline, set: () => onChange({ underline: !underline }) },
   {
     label: center ? 'Align left' : 'Center text',
     icon: center ? AlignLeftIcon : AlignCenterIcon,
     on: center,
-    set: () => setCenter((v) => !v)
+    set: () => onChange({ center: !center })
   }];
 
 
@@ -56,9 +65,10 @@ export function WordDoc() {
         <select
           id="word-font"
           value={font}
-          onChange={(e) => setFont(e.target.value)}
+          disabled={readOnly}
+          onChange={(e) => onChange({ font: e.target.value })}
           className="bevel-in bg-white px-1 py-[1px] text-[11px] text-ink outline-none">
-          
+
           {fonts.map((f) =>
           <option key={f} value={f}>
               {f}
@@ -71,9 +81,10 @@ export function WordDoc() {
         <select
           id="word-size"
           value={size}
-          onChange={(e) => setSize(Number(e.target.value))}
+          disabled={readOnly}
+          onChange={(e) => onChange({ size: Number(e.target.value) })}
           className="bevel-in bg-white px-1 py-[1px] text-[11px] text-ink outline-none">
-          
+
           {sizes.map((s) =>
           <option key={s} value={s}>
               {s}
@@ -89,7 +100,7 @@ export function WordDoc() {
           type="button"
           aria-label={label}
           className="bevel-btn grid h-6 w-6 place-items-center text-ink">
-          
+
             <Icon className="h-3.5 w-3.5" />
           </button>
         )}
@@ -100,9 +111,10 @@ export function WordDoc() {
           aria-label={label}
           aria-pressed={on}
           data-pressed={on}
+          disabled={readOnly}
           onClick={set}
           className="bevel-btn grid h-6 w-6 place-items-center text-ink">
-          
+
             <Icon className="h-3.5 w-3.5" />
           </button>
         )}
@@ -116,31 +128,34 @@ export function WordDoc() {
           <input
             id="word-heading"
             value={heading}
-            onChange={(e) => setHeading(e.target.value)}
+            readOnly={readOnly}
+            onChange={(e) => onChange({ heading: e.target.value })}
             placeholder={`happy birthday ${BIRTHDAY_GIRL}!`}
             className="bubble-text w-full border-b border-dashed border-cotton bg-transparent pb-1 text-center text-[19px] text-hotpink outline-none placeholder:text-hotpink/40" />
-          
+
           <label className="sr-only" htmlFor="word-body">
             Card body
           </label>
           <textarea
             id="word-body"
             value={body}
-            onChange={(e) => setBody(e.target.value)}
+            readOnly={readOnly}
+            onChange={(e) => onChange({ body: e.target.value })}
             placeholder="write the long, sappy version here — memories, inside jokes, the whole thing..."
             style={bodyStyle}
             className="mt-3 block h-[150px] w-full resize-none bg-transparent leading-relaxed text-ink outline-none placeholder:text-ink/30" />
-          
+
           <label className="sr-only" htmlFor="word-signature">
             Signed by
           </label>
           <input
             id="word-signature"
             value={signature}
-            onChange={(e) => setSignature(e.target.value)}
+            readOnly={readOnly}
+            onChange={(e) => onChange({ signature: e.target.value })}
             placeholder="— love, ur name"
             className="bubble-text mt-2 w-full bg-transparent text-right text-[14px] text-ink outline-none placeholder:text-ink/30" />
-          
+
         </article>
       </div>
       <p className="flex justify-between px-1 pt-[2px] text-[11px] text-ink/70">
