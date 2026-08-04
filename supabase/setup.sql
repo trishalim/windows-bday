@@ -50,14 +50,18 @@ create policy "public update" on public.desktop_windows for update using (true) 
 create policy "public delete" on public.desktop_windows for delete using (true);
 
 -- 5. Storage bucket for paint drawings + photo uploads -----------------------
+-- A PUBLIC bucket serves file content via its public URL without any SELECT
+-- policy on storage.objects. We deliberately do NOT add a SELECT policy: it
+-- would let clients list every file in the bucket, and the app never lists —
+-- it only uploads and builds public URLs. So we grant INSERT + UPDATE only.
 insert into storage.buckets (id, name, public)
 values ('desktop-media', 'desktop-media', true)
 on conflict (id) do nothing;
 
+-- Remove the old broad read policy if a previous run created it.
 drop policy if exists "media public read"   on storage.objects;
 drop policy if exists "media public insert" on storage.objects;
 drop policy if exists "media public update" on storage.objects;
 
-create policy "media public read"   on storage.objects for select using (bucket_id = 'desktop-media');
 create policy "media public insert" on storage.objects for insert with check (bucket_id = 'desktop-media');
 create policy "media public update" on storage.objects for update using (bucket_id = 'desktop-media') with check (bucket_id = 'desktop-media');
