@@ -106,11 +106,27 @@ export function App() {
 
           <DesktopIcons onOpen={open} />
 
+          {/* Persistent call-to-action once there are messages on the board. */}
+          {!empty &&
+          <div className="pointer-events-none absolute left-1/2 top-3 z-[3] w-[min(92vw,340px)] -translate-x-1/2 bevel-out bg-chrome/95 px-4 py-2 text-center shadow-[3px_3px_0_rgba(58,28,44,0.35)]">
+              <p className="bubble-text text-[15px] leading-tight text-hotpink">
+                ♡ it's {BIRTHDAY_GIRL}'s birthday ♡
+              </p>
+              <p className="mt-[2px] text-[11px] leading-snug text-ink">
+                leave her a birthday message! open an icon on the left or hit{' '}
+                <strong>start</strong> to add yours.
+              </p>
+            </div>
+          }
+
           {empty &&
           <div className="pointer-events-none absolute left-1/2 top-1/2 w-[280px] -translate-x-1/2 -translate-y-1/2 bevel-out bg-chrome/95 p-4 text-center sm:w-[330px]">
-              <h1 className="bubble-text text-[17px] leading-tight text-hotpink">
-                leave {BIRTHDAY_GIRL} a birthday message ♡
+              <h1 className="bubble-text text-[18px] leading-tight text-hotpink">
+                🎂 it's {BIRTHDAY_GIRL}'s birthday!
               </h1>
+              <p className="mt-1 bubble-text text-[15px] leading-tight text-ink">
+                leave her a birthday message ♡
+              </p>
               <p className="mt-2 text-[12px] leading-relaxed text-ink">
                 Open an icon on the left (or hit <strong>start</strong>) to make a new
                 drawing, text file, word card, photo, or sticky note. Drag ur windows
