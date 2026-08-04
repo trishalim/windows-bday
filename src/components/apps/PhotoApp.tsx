@@ -2,6 +2,10 @@ import React, { useRef, useState } from 'react';
 import { ImagePlusIcon, LinkIcon, RotateCcwIcon, UploadIcon } from 'lucide-react';
 import { MenuBar } from '../Win95Window';
 import { PhotoContent } from '../../types/desktop';
+import { downscaleImage } from '../../lib/downscaleImage';
+
+// Reject truly huge files before we even try to decode them.
+const MAX_INPUT_BYTES = 25 * 1024 * 1024; // 25 MB
 
 interface PhotoAppProps {
   content: PhotoContent;
@@ -16,6 +20,8 @@ export function PhotoApp({ content, readOnly = false, onChange, onUploadImage }:
   const [dragOver, setDragOver] = useState(false);
   const [pendingPreview, setPendingPreview] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState(false);
+  const [sizeError, setSizeError] = useState(false);
+  const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const src = content.imageUrl ?? pendingPreview;
@@ -24,12 +30,22 @@ export function PhotoApp({ content, readOnly = false, onChange, onUploadImage }:
   const loadFile = async (file?: File | null) => {
     if (readOnly || !file || !file.type.startsWith('image/')) return;
     setUploadError(false);
+    setSizeError(false);
+
+    if (file.size > MAX_INPUT_BYTES) {
+      setSizeError(true);
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = () => setPendingPreview(String(reader.result));
     reader.readAsDataURL(file);
 
-    const ext = (file.name.split('.').pop() || file.type.split('/')[1] || 'png').toLowerCase();
-    const url = await onUploadImage(file, ext);
+    setBusy(true);
+    // Shrink + compress so big camera photos don't bloat storage or slow the board.
+    const { blob, ext } = await downscaleImage(file);
+    const url = await onUploadImage(blob, ext);
+    setBusy(false);
     if (url) {
       onChange({ imageUrl: url });
       setPendingPreview(null);
@@ -147,6 +163,9 @@ export function PhotoApp({ content, readOnly = false, onChange, onUploadImage }:
               className="bubble-text mt-2 w-full bg-transparent text-center text-[13px] text-ink outline-none placeholder:text-ink/35" />
 
             </figcaption>
+            {busy &&
+            <p className="mt-1 text-center text-[10px] text-ink/60">optimizing photo…</p>
+            }
             {uploadError &&
             <p className="mt-1 text-center text-[10px] text-red-600">
                 couldn't save to the cloud — shown locally only
@@ -164,6 +183,11 @@ export function PhotoApp({ content, readOnly = false, onChange, onUploadImage }:
             {!readOnly &&
             <p className="mt-1 text-[11px] text-cotton">
                 or hit <strong>Open...</strong> to pick one from ur computer
+              </p>
+            }
+            {sizeError &&
+            <p className="mt-2 text-[11px] font-bold text-lemon">
+                that image is too big (max 25MB) — try a smaller one ♡
               </p>
             }
           </div>

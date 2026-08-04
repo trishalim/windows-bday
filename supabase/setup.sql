@@ -54,9 +54,18 @@ create policy "public delete" on public.desktop_windows for delete using (true);
 -- policy on storage.objects. We deliberately do NOT add a SELECT policy: it
 -- would let clients list every file in the bucket, and the app never lists —
 -- it only uploads and builds public URLs. So we grant INSERT + UPDATE only.
-insert into storage.buckets (id, name, public)
-values ('desktop-media', 'desktop-media', true)
-on conflict (id) do nothing;
+-- file_size_limit + allowed_mime_types are a server-side backstop: even if a
+-- client skips the in-app downscale, nothing oversized or non-image can land.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'desktop-media', 'desktop-media', true,
+  10485760, -- 10 MB
+  array['image/jpeg','image/png','image/gif','image/webp']
+)
+on conflict (id) do update
+  set public = excluded.public,
+      file_size_limit = excluded.file_size_limit,
+      allowed_mime_types = excluded.allowed_mime_types;
 
 -- Remove the old broad read policy if a previous run created it.
 drop policy if exists "media public read"   on storage.objects;
